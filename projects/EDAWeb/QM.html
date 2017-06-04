@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://fiddle.jshell.net/iEason/1p8p9pk3/103/show/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <script type="text/javascript" src="./jquery-1.11.0.js"></script>
+    <link rel="stylesheet" type="text/css" href="./result-light.css">
+      <script type="text/javascript" src="./jcanvas.js"></script>
+  <style type="text/css">
+    /*
+    Please only use the following colors in your assignments. 
+    
+    // Grays
+    lightest-gray:             #FBFBFB;
+    lighter-gray:              #D8D8D8;
+    light-gray:                #CCCCCC;
+    gray:                      #888888;
+    darker-gray:               #666666;
+    darkest-gray:              #333333;
+
+    // Oranges
+    lightest-orange:           #FFDAC1;
+    lighter-orange:            #F9D8BC;
+    light-orange:              #FFB789;
+    pale-orange:               #E8B493;
+    accent-orange:             #E68142;
+    orange:                    #c60;
+    dark-orange:               #AB4600;
+
+    // Blues
+    lighter-blue:              #87ADD2;
+    light-blue:                #6685A8;
+    dark-blue:                 #5780A6;
+    darker-blue:               #576E91;
+
+    // Greens
+    green:                     #738033;
+
+    // Reds
+    light-red:                 #FF4949;
+    red:                       #BB0404;
+    dark-red:                  #880000;
+
+    // Yellows
+    light-yellow:              #FFD364;
+    yellow:                    #EAB51F;
+    dark-yellow:               #D39F0D;
+
+    // Black & white
+    black:                     #000000;
+    white:                     #FFFFFF;
+*/
+ body {
+    background-color: white;
+}
+.assignment-container {
+    border: 1px solid #333333;
+    height: 1000px;
+    margin-bottom: 10px;
+    width: 650px;
+}
+.button-container {
+    overflow: visible;
+    white-space: nowrap;
+    width: 650px;
+    word-wrap: none;
+}
+.container-label {
+    font-size: 20px;
+    display: block;
+}
+.example-button {
+    background-color: #c60;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    height: 30px;
+    margin: 0 2px 5px 0;
+    width: 100px;
+}
+.reset-button, .run-button, .next-button, .prev-button {
+    background-color: #c60;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    height: 40px;
+    margin-bottom: 5px;
+    width: 100px;
+}
+.reset-button:hover, .run-button:hover {
+    background-color: #AB4600;
+}
+.right-align {
+    float: right;
+}
+.textarea-style {
+    height: 170px;
+    margin-bottom: 15px;
+    width: 230px;
+}
+.textarea-wide {
+    width: 400px;
+}
+/* 
+  Add any additional CSS rules below 
+  Please avoid using !important in any rules
+*/
+  </style>
+
+  <title> by iEason</title>
+
+<script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+/*
+  Two javascript libraries have been included for your use 
+  Please do not use any other external javascript library
+  
+  Included libraries:
+     - jQuery
+     - jCanvas
+
+  Documentation / references:
+  References: 
+     - HTML/CSS/JavaScript
+     http://www.w3schools.com/
+     https://developer.mozilla.org/en-US/Learn/HTML
+     - jQuery
+     http://learn.jquery.com/
+     http://www.w3schools.com/jquery/default.asp
+     
+  API:
+     - jQuery
+     http://api.jquery.com/
+     - jCavanas  
+     http://projects.calebevans.me/jcanvas/docs/
+*/
+
+// Stores the id of the canvas element
+this.canvasId = 'drawingCanvas';
+
+// Stores the id of the assignment container
+this.divContainerId = 'assignmentContainer';
+
+// Stores the id of the input textarea
+this.inputTextareaId = 'inputData';
+
+// Stores the id of the input textarea
+this.outputTextareaId = 'outputData';
+
+// Gets a reference to the canvas
+this.$canvas = $('#' + this.canvasId);
+
+// Sets default spacing to 0
+this.spacing = 0;
+
+// Sets a reference to the global scope
+var self = this;
+
+// Initializes listeners and resets any values
+this.init = function () {
+
+    // Clears canvas
+    self.clearCanvas();
+
+    // Adds a click event listeners to the 'Run' button
+    $('.run-button').click(function () {
+        // Clears canvas
+        self.clearCanvas();
+
+        // Runs algorithm
+        self.run();
+    });
+
+    // Draw next step
+    $('.next-button').click(function () {
+        // Clears canvas
+        self.clearCanvas();
+
+        // Runs algorithm
+        self.next();
+    });
+    // Draw prev step
+    $('.prev-button').click(function () {
+        // Clears canvas
+        self.clearCanvas();
+
+        // Runs algorithm
+        self.prev();
+    });
+
+    // Adds a click event listener to the 'Reset' button
+    $('.reset-button').click(function () {
+        self.clearCanvas();
+    });
+
+    // Adds click event listeners to all the 'Example' buttons
+    $('.example-button').click(function () {
+        self.loadExample($(this).attr('number'));
+    });
+};
+
+// Clears canvas of all rendered elements
+this.clearCanvas = function () {
+    // Clears the drawing canvas of any preiously rendered elements
+    self.$canvas.clearCanvas();
+};
+
+// Loads pre-configured examples into the inputs
+this.loadExample = function (example) {
+    // Gets a reference to the input textarea
+    var $inputTextarea = $('#' + self.inputTextareaId);
+
+    // Pre-defined examples
+    switch (example) {
+        // All examples must follow the same format
+        case '1':
+            $inputTextarea.val('Inputs: 3\n' +
+                'On-set: 0 2 6 7');
+            break;
+
+        case '2':
+            $inputTextarea.val('Inputs: 4\n' +
+                'On-set: 0 1 5 7 8 9 13 15');
+            break;
+
+        case '3':
+            $inputTextarea.val('Inputs: 5\n' +
+                'On-set: 0 1 5 7 8 10 14 15');
+            break;
+
+        default:
+            $inputTextarea.val('');
+    }
+
+};
+
+// Checks for the index of a regular expression string
+String.prototype.regexIndexOf = function (regex, startpos) {
+    var indexOf = this.substring(startpos || 0).search(regex);
+    return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+};
+
+// Converts a number into a binary value with set width
+Number.prototype.toBinary = function (width) {
+    var binary = this.toString(2);
+    while (binary.length < width) {
+        binary = '0' + binary;
+    }
+    return binary;
+};
+
+// Gets the indexOf an object in an array that has a property
+Array.prototype.objectIndexOf = function (searchTerm, property) {
+    for (var i = 0, len = this.length; i < len; i++) {
+        if (this[i][property] === searchTerm) return i;
+    }
+    return -1;
+};
+
+// Reads input and returns an array of objects
+this.readInputs = function () {
+    // Gets a reference to the input textarea
+    var $inputTextArea = $('#' + self.inputTextareaId);
+
+    // Stores all the lines parsed from the input area
+    var lines = $inputTextArea.val().split('\n');
+
+    // Stores the on-set values in an array of integers
+    var onset = [];
+
+    // Stores the number of inputs
+    var numberOfInputs = 0;
+
+    /* Assumes that all input is formatted the same and considered valid */
+
+    // Parse input into an object containing the inputs and on-set values
+    lines.forEach(function (line, index) {
+        // Parse line into tokens
+        var lineContents = line.split(/\s/g);
+
+        // Line is labeled as an input line
+        if (line.regexIndexOf(/inputs:/ig, 0) != -1) {
+            numberOfInputs = lineContents[1];
+        }
+        // Line is labeled as on-set line
+        else if (line.regexIndexOf(/on-set\:/ig, 0) != -1) {
+            // Iterate over each token
+            lineContents.forEach(function (token) {
+                // Converts the string token into an integer token
+                var numberToken = parseInt(token);
+
+                // Pushes valid integers onto the on-set array
+                if (!isNaN(numberToken)) {
+                    onset.push(numberToken);
+                }
+            });
+        }
+    });
+
+
+    // Checks if the input is parsable
+    if (numberOfInputs <= 0) {
+        throw 'Parsing error.';
+    }
+    // Not a valid number of inputs
+    else if (numberOfInputs > 5) {
+        throw 'Exceeds maximum number of inputs';
+    } else {
+        return {
+            inputCount: numberOfInputs,
+            onset: onset
+        };
+    }
+};
+
+// Prints contents to the output text area
+this.outputString = function (string) {
+    $('#' + self.outputTextareaId).html(string);
+};
+
+// Pretty prints the array as a single line string with linkings
+this.prettyPrint = function (array, connector) {
+    if (array && array.length > 0) {
+        return array.join(connector);
+    } else {
+        return '';
+    }
+};
+
+// Prints the formatted textual output
+this.printTextOutput = function (outputTable) {
+    // Creates an empty string to store the output
+    var output = '';
+
+    // Print formatted output
+    output += 'Sum-of-products: ' + self.prettyPrint(outputTable.minTerms, ' + ') + '\n';
+    output += '*Transistors used: ' + self.getNumberOfTransistors(outputTable.minTerms) + '\n\n';
+    output += 'Prime implicants: ' + self.prettyPrint(outputTable.primes, ', ') + '\n\n';
+    output += 'Essential PIs: ' + self.prettyPrint(outputTable.essentials, ', ') + '\n\n';
+    output += 'Selected PIs: ' + self.prettyPrint(outputTable.selected, ', ') + '\n\n';
+    output += 'Final sum-of-products: ' + self.prettyPrint(outputTable.selected, ' + ') + '\n';
+    output += '*Transistors used: ' + self.getNumberOfTransistors(outputTable.selected) + '\n\n';
+
+    // Prints output to textarea
+    this.outputString(output);
+};
+
+// Converts the binary representation to the boolean
+this.binaryToBoolean = function (binary) {
+    var booleanString = '';
+    for (var i = 0; i < binary.length; i++) {
+        // If the binary value is a 1 or 0 include the boolean value
+        if (binary[i] === '1' || binary[i] === '0') {
+            booleanString += String.fromCharCode(97 + i);
+        }
+
+        // Add NOT operation
+        if (binary[i] === '0') {
+            booleanString += '\'';
+        }
+    }
+
+    return booleanString;
+};
+
+/* 
+	Parses input object and retrns an array of minterm objects
+    |inputsANdOnsets| is an input object with the following properties:
+    	- inputCount: Number of inputs,
+        - onset:      The onsets specified by input
+    Returns an array of minterm objects with the following properties:
+        - boolean:  Boolean representation of the minterm,
+        - binary:   Binary representation of the minterm,
+        - cover:    The integer cover of the minterm,
+        - oneCount: Number of 1's in the minterm
+*/
+this.convertInputToSumOfProducts = function (inputsAndOnsets) {
+
+    // Stores the known width of the 
+    var termWidth = inputsAndOnsets.inputCount;
+
+    // Stores the binary forms of the on-set values
+    var minterms = new Array();
+
+    // Converts integer values into binary and stores them
+    inputsAndOnsets.onset.forEach(function (value) {
+        var binaryValue = value.toBinary(termWidth);
+        var oneCount = 0;
+        for (var i = 0; i < binaryValue.length; i++) {
+            // Counts the number of 1's
+            if (binaryValue[i] === '1') {
+                oneCount++;
+            }
+        }
+
+        minterms.push({
+            boolean: self.binaryToBoolean(binaryValue),
+            binary: binaryValue,
+            cover: [value],
+            oneCount: oneCount
+        });
+    });
+
+    return minterms;
+};
+
+/* 
+	Takes in two minterm objects and compares them to produce the minterm that covers both
+    |minterm1| && |minterm2| are minterm objected expected to have the following properties
+        - binary: The binary representation of the minterm
+    Returns a simplified minterm object if one is found.
+    If no simplified minterm is found then return false.
+    
+    An example to call this function is as follows
+    var m1 = {binary: '100', boolean: "ab'c'",  cover: [4]};
+    var m2 = {binary: '000', boolean: "a'b'c'", cover: [0]};
+    self.compareTwoImplicants(m1, m2);
+    The returned object will be: 
+        {
+        	boolean: "b'c'",
+            binary:  '-00',
+            cover:   [0, 4],
+            oneCount: 0
+        }
+*/
+this.compareTwoImplicants = function (minterm1, minterm2) {
+    // Stores the number of differences between the two minterms
+    var differences = 0;
+
+    // Stores the simplified minterm that covers both
+    var simplifiedMinterm = '';
+
+    // Stores the number of 1's in the simplified minterm
+    var oneCount = 0;
+
+    // Assumes that both minterms are the same length
+    for (var i = 0; i < minterm1.binary.length; i++) {
+        // If both minterms share the same bit we want to count it in the simplified minterm
+        if (minterm1.binary[i] == minterm2.binary[i]) {
+            simplifiedMinterm += minterm1.binary[i];
+
+            // Counts the number of shared 1's
+            if (minterm1.binary[i] === '1') {
+                oneCount++;
+            }
+        }
+        // Mark the difference in bit and increment the difference counter
+        else {
+            simplifiedMinterm += '-';
+            differences++;
+        }
+    }
+
+    // If differences exceed 1 then we cannot simplify these two minterms
+    if (differences > 1) {
+        return false;
+    }
+    // Else we return the simplified minterm along with information regarding the minterm
+    else {
+        return {
+            boolean: self.binaryToBoolean(simplifiedMinterm),
+            binary: simplifiedMinterm,
+            cover: minterm1.cover.concat(minterm2.cover),
+            oneCount: oneCount
+        }
+    }
+};
+
+// Iterates through an array of minterm objects and returns only minterms
+this.extractMinterms = function (mintermObjects) {
+    var minterms = [];
+
+    // Iterate over each minterm object
+    mintermObjects.forEach(function (mintermObject) {
+        minterms.push(mintermObject.boolean);
+    });
+
+    return minterms;
+};
+
+/* 
+    Draws groups in the canvas
+    |groups| is expected to be an array of groups
+       - Each |group| (element) inside |groups| is expected to be an array of minterm objects
+    minterm objects are expected to have the following properties:
+        - binary:   Binary representation for the minterm
+        - oneCount: Number of 1's
+        - cover:    An array of integer values reflecting the cover
+*/
+this.drawGroups = function (groups) {
+    // Quits draw if there is nothing to draw
+    if (!groups || groups.length < 0) {
+        return;
+    }
+
+    // Sets spacing between each listed item
+    var gapSize = 20;
+
+    // Stores the current starting position for each group
+    var listStartPos = 0;
+
+    // Iterates over each group
+    groups.forEach(function (group, index) {
+        // Group label
+        var groupLabel = 'G' + index;
+
+        // Stores the number of items to be listed
+        var numberOfListings = group.length;
+
+        // Stores the lower bound for the group
+        var listingHeight = listStartPos + (gapSize * (numberOfListings + 1));
+
+        // Draws group label and separator
+        self.$canvas.drawText({
+            fillStyle: '#333333',
+            strokeWidth: 1,
+            x: 50,
+            y: (listingHeight / 2) + (listStartPos * (0.5)),
+            fontSize: 12,
+            fontFamily: 'Helvetica, sans-serif',
+            text: groupLabel
+        }).drawLine({
+            strokeStyle: '#333333',
+            strokeWidth: 2,
+            x1: 20,
+            y1: listingHeight,
+            x2: 300,
+            y2: listingHeight
+        });
+
+        // Prints out each minTerm along with its cover
+        group.forEach(function (minterm, index) {
+            // Stores the binary string of the minterm
+            var binaryString = minterm.binary;
+
+            // Stringifies the cover array
+            var cover = '(' + minterm.cover.join(', ') + ')';
+
+            // Stores the listing position for the minterm
+            var listItemPosition = listStartPos + gapSize * (index + 1);
+
+            // Draw minterm and cover at the |listItemPosition|
+            self.$canvas.drawText({
+                fillStyle: '#333333',
+                strokeWidth: 1,
+                x: 100,
+                y: listItemPosition,
+                fontSize: 12,
+                fontFamily: 'Helvetica, sans-serif',
+                text: cover
+            }).drawText({
+                fillStyle: '#333333',
+                strokeWidth: 1,
+                x: 200,
+                y: listItemPosition,
+                fontSize: 12,
+                fontFamily: 'Helvetica, sans-serif',
+                text: binaryString
+            })
+        });
+
+        // Update the new y-position
+        listStartPos = listingHeight;
+    });
+};
+
+/*******************************************************************/
+/* If you choose to create more functions please add them here     */
+
+/*******************************************************************/
+/* Deep copy the element of array */
+this.cloneObj = function (obj) {
+    var str, newobj = obj.constructor === Array ? [] : {};
+    if (typeof obj !== 'object') {
+        return;
+    } else if (window.JSON) {
+        str = JSON.stringify(obj),
+        newobj = JSON.parse(str);
+    } else {
+        for (var i in obj) {
+            newobj[i] = typeof obj[i] === 'object' ? cloneObj(obj[i]) : obj[i];
+        }
+    }
+    return newobj;
+};
+
+/* 	Group minterms according to the number of 1’s in the minterm, one array -> several array
+ 	Input: sumOfProducts, an array of minterm objects with the following properties:
+   	- boolean:  Boolean representation of the minterm,
+	- binary:   Binary representation of the minterm,
+	- cover:    The integer cover of the minterm,
+	- oneCount: Number of 1's in the minterm
+	Output: an array of group array of minterm objects, argv i in group[i] indicate the number of i  */
+this.group = function (sumOfProducts) {
+    var num = 1;
+    for (var i = 0; i < sumOfProducts[0].boolean.length; ++i) {
+        var c = sumOfProducts[0].boolean.charAt(i);
+        if (c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == '-') num = num + 1;
+    }
+    var group = new Array();
+    // grouped
+    for (var i = 0; i < num; ++i) {
+        group[i] = new Array();
+    }
+    // ungrouped
+    var m = [];
+    for (var i = 0; i < sumOfProducts.length; ++i) {
+        m[i] = sumOfProducts[i];
+    }
+    // group according to number of 1
+    for (var i = 0; i < num; ++i) {
+        if (i < group.length) {
+            for (var j = 0; j < sumOfProducts.length; ++j) {
+                if (i == m[j].oneCount) group[i].push(m[j]);
+            }
+
+            if (group[i].length == 0) group.pop();
+        }
+    }
+    return group;
+}
+
+/* 	Compare each entry in Gi to each entry in Gi+1
+ 	Input: an grouped array of minterm objects and flag
+ 	Output: one array consist of all minterms after comparing, then group */
+this.compare = function (group, flag) {
+    while (flag == 1) {
+        flag = 0;
+        var pi = [];
+        for (var i = 0; i < group.length; ++i) {
+            if (group[i] && group[i + 1]) {
+                for (var j = 0; j < group[i].length; ++j) {
+                    for (var k = 0; k < group[i + 1].length; ++k) {
+                        var m = self.compareTwoImplicants(group[i][j], group[i + 1][k]);
+                        if (m) {
+                            var dup = 0;
+                            flag = 1;
+                            for (var l = 0; l < pi.length; ++l) {
+                                if (m.binary == pi[l].binary) dup = 1;
+                            }
+                            if (dup == 0) pi.push(m);
+                        }
+                    }
+                    if (flag == 0) pi.push(group[i][j]);
+                }
+            }
+        }
+        if (group[i - 1][0]) pi.push(group[i - 1].pop());
+        return self.group(pi);
+    }
+    return -1;
+}
+
+/*
+    ************** THIS NEEDS TO BE MODIFIED **************
+    Takes in an array of minterms and returns transistors used
+    |sumOfProducts| is expected to be an array of minterms
+    Returns the number of transistors required
+*/
+this.getNumberOfTransistors = function (sumOfProducts) {
+    /* 
+        Fill in this code to calculate the number of transistors 
+        Be sure to update the return statement below    
+        */
+    var size = sumOfProducts.length;
+    for (var j = 0; j < sumOfProducts.length; ++j) {
+        for (var i = 0; i < sumOfProducts[j].length; ++i) {
+            var c = sumOfProducts[j].charAt(i);
+            if (c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e') size = size + 1;
+        }
+    }
+    size = size * 2;
+    return size;
+};
+
+// Runs your code
+this.run = function () {
+
+    // Declares an array variable to store wire connections
+    var inputsAndOnsets;
+
+    try {
+        inputsAndOnsets = self.readInputs();
+    } catch (error) {
+        // Failed to parse input
+        self.outputString(error);
+        return;
+    }
+
+    /* 
+    	Gets the sum of products based on the on-set values
+        Returns an array of minterm objects:
+           - boolean:  Returns the boolean algebra representation (a'b'c)
+           - binary:   Returns the binary representation (001)
+           - cover:    Returns the integer cover value (1)
+           - oneCount: Returns the number of 1's (1)
+    */
+    var sumOfProducts = self.convertInputToSumOfProducts(inputsAndOnsets);
+
+    /*
+        Basic instructions: 
+        1. Implement the QM algorithm. Once you have implemented the QM algorithm please set the properties on the |outputTable| accordingly. Please read the comment to understand what is expected.
+        
+        2. Implement the getNumberOfTransistors function to calculate the number of transistors used. This function takes in an array of minTerms NOT minterm objects. An example of input is as follows:  ["a'b'", "ac'", "b"] 
+        
+        3. Animate the QM algorithm as it is happening. Also, format it to be multi column by changing the code. This way you can show all the steps and allow the user to step through the algorithm.
+        
+        4. Implement graphical K-Maps that show PI selection. (essential & selected)
+        
+        Please read over the assignment details for more information.
+    */
+
+    /* Place your code here */
+    // 1. Find all the prime implicants
+    // 1.1 Group minterms according to the number of 1’s in the minterm
+    var group = self.group(sumOfProducts);
+    var grouped = [];
+    grouped[0] = self.cloneObj(group);
+
+    // 1.2 Compare each entry in Gi to each entry in Gi+1
+    var flag = 1;
+    var pi = self.compare(group, flag);
+    grouped[1] = self.cloneObj(pi);
+    if (flag == 1) {
+        var top = 2
+        var temp = self.compare(pi, flag);
+        pi = temp;
+        grouped[top] = self.cloneObj(pi);
+        ++top;
+    }
+
+    // 2. Find all the essential prime implicants
+    var hit = new Array();
+    inputsAndOnsets.onset.forEach(function (value) {
+        var coverCount = 0;
+        hit.push({
+            onset: value,
+            covertime: coverCount,
+            minterm: [],
+            used: []
+        });
+    });
+    var epi = new Array();
+    var ppi = new Array();
+    for (var i = 0; i < hit.length; ++i) {
+        for (var j = 0; j < pi.length; ++j) {
+            for (var k = 0; k < pi[j].length; ++k) {
+                pi[j][k].cover.forEach(function (value) {
+                    if (value == hit[i].onset) {
+                        ++hit[i].covertime;
+                        var dup = 0;
+                        for (var l = 0; l < hit[i].minterm.length; ++l) {
+                            if (pi[j][k].binary == hit[i].minterm.binary) dup = 1;
+                        }
+                        if (dup == 0) {
+                            hit[i].minterm.push(pi[j][k]);
+                            var dupl = 0;
+                            for (var n = 0; n < ppi.length; ++n) {
+                                if (pi[j][k].binary == ppi[n].binary) dupl = 1;
+                            }
+                            if (dupl == 0) {
+                                ppi.push(pi[j][k]);
+                            }
+                        }
+                    }
+                })
+            }
+        }
+    }
+
+    for (var i = 0; i < hit.length; ++i) {
+        if (hit[i].covertime == 1) {
+            var dup = 0;
+            for (var j = 0; j < epi.length; ++j) {
+                for (var k = 0; k < hit[i].minterm.length; ++k) {
+                    if (epi[j].binary == hit[i].minterm[k].binary) dup = 1;
+                }
+            }
+            if (dup == 0) epi.push(hit[i].minterm.pop());
+        }
+    }
+    var selectedMinTerms = [];
+    epi.forEach(function (object) {
+        selectedMinTerms.push(object);
+    });
+    for (var i = 0; i < epi.length; ++i) {
+        epi[i].cover.forEach(function (value) {
+            hit.forEach(function (object) {
+                if (object.covertime == 1 || object.onset == value) hit.splice(hit.indexOf(object), 1);
+            });
+        });
+    }
+
+    // 3. Select a minimal set of remaining prime implicats that covers the on-set of the functions
+    while (hit.length) {
+        var temp = [];
+        temp = hit[0];
+        hit.forEach(function (object) {
+            if (object.covertime < temp.covertime) temp = object;
+        });
+        hit.forEach(function (object) {
+            if (object.onset == temp.onset) hit.splice(hit.indexOf(object), 1);
+        });
+        if (temp.minterm.length) selectedMinTerms.push(temp.minterm[0]);
+        for (var i = 0; i < selectedMinTerms.length; ++i) {
+            selectedMinTerms[i].cover.forEach(function (value) {
+                hit.forEach(function (object) {
+                    if (object.onset == value) hit.splice(hit.indexOf(object), 1);
+                });
+            });
+        }
+    }
+
+
+    /*
+    	********** THIS IS JUST EXAMPLE CODE **************
+        This is just example code on how to draw the groups 
+        Delete this code when you understand how it works.
+    */
+    /* 
+    	Gets the sum of products based on the on-set values
+        Returns an array of minterm objects:
+           - boolean:  Returns the boolean algebra representation (a'b'c)
+           - binary:   Returns the binary representation (001)
+           - cover:    Returns the integer cover value (1)
+           - oneCount: Returns the number of 1's (1)
+
+    Draws groups in the canvas
+    |groups| is expected to be an array of groups
+       	- Each |group| (element) inside |groups| is expected to be an array of minterm objects
+    	minterm objects are expected to have the following properties:
+        - binary:   Binary representation for the minterm
+        - oneCount: Number of 1's
+        - cover:    An array of integer values reflecting the cover	*/
+    self.drawGroups(grouped[0]);
+    var i = 1;
+    this.next = function () {
+        if (i < top - 1) self.drawGroups(grouped[i]);
+        else {
+            self.drawGroups(grouped[top - 1]);
+            alert("That is the final step!");
+        }
+        ++i;
+    }
+    this.prev = function () {
+        if (i > 2) self.drawGroups(grouped[i-2]);
+        else {
+            self.drawGroups(grouped[0]);
+            alert("That is already the first step!");
+        }
+        --i;
+    }
+    /*    self.drawGroups([
+        [{
+            binary: '000',
+            cover: [0]
+        }],
+        [{
+            binary: '100',
+            cover: [4]
+        }, {
+            binary: '010',
+            cover: [2]
+        }],
+        [{
+            binary: '110',
+            cover: [6]
+        }, {
+            binary: '011',
+            cover: [3]
+        }]
+   ]);*/
+
+    /*
+        ************** THIS NEEDS TO BE MODIFIED **************
+    	Set each of these properties to print formatted output
+        Each property is expected to be an array of minterms not minterm objects
+        You may wish to use the extractMinterms function to convert minterm objects to minterms
+    */
+    var outputTable = {
+        minTerms: self.extractMinterms(sumOfProducts),
+        implicants: [],
+        primes: self.extractMinterms(ppi),
+        essentials: self.extractMinterms(epi),
+        selected: self.extractMinterms(selectedMinTerms)
+    };
+
+    // Prints textual output
+    self.printTextOutput(outputTable);
+
+
+};
+
+// Initializes listeners and resets any values
+this.init();
+/*	1.implement the QM algorithm (except for the Petrick or Branch-and-Bound Method), and using sort of heruistic instead.
+	2.implement group and compare function to simplify the run function
+    3.show the step of simplify by adding next button
+    This one feels more complicated, since the algorithm only says three general steps and we have to implement the rest. 
+    Help Beixing Yin with getNumberofTransistors function.
+*/
+});//]]> 
+
+</script>
+
+  
+</head>
+
+<body>
+  <button number="1" class="example-button">Example 1</button>
+<button number="2" class="example-button">Example 2</button>
+<button number="3" class="example-button">Example 3</button>
+<table>
+    <tbody><tr>
+        <td> <span class="container-label">Inputs:</span> 
+            <textarea id="inputData" class="textarea-style"></textarea>
+        </td>
+        <td> <span class="container-label">Output:</span> 
+            <textarea id="outputData" class="textarea-style textarea-wide"></textarea>
+        </td>
+    </tr>
+</tbody></table>
+<div class="button-container">
+    <button class="run-button">Run</button>
+    <button class="prev-button">Prev Step</button>
+    <button class="next-button">Next Step</button>
+    <button class="reset-button right-align">Reset</button>
+</div> <span class="container-label">Canvas:</span> 
+<div id="assignmentContainer" class="assignment-container">
+    <canvas id="drawingCanvas" height="1000" width="800"></canvas>
+</div>
+  
+  <script>
+  // tell the embed parent frame the height of the content
+  if (window.parent && window.parent.parent){
+    window.parent.parent.postMessage(["resultsFrame", {
+      height: document.body.getBoundingClientRect().height,
+      slug: "1p8p9pk3"
+    }], "*")
+  }
+</script>
+
+</body></html>
